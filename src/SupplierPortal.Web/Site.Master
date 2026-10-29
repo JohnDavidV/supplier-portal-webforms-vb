@@ -1,0 +1,27 @@
+<%@ Master Language="VB" AutoEventWireup="false" CodeBehind="Site.Master.vb" Inherits="SupplierPortal.Web.SiteMaster" %>
+<!DOCTYPE html>
+<html lang="es">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portal de proveedores</title>
+    <link href="~/Content/site.css" rel="stylesheet" />
+</head>
+<body>
+    <form id="MainForm" runat="server">
+        <header class="topbar">
+            <a class="brand" href="~/Default.aspx" runat="server">Portal de proveedores</a>
+            <asp:PlaceHolder ID="UserBox" runat="server" Visible="false">
+                <span class="who"><asp:Literal ID="SupplierName" runat="server" /></span>
+                <asp:LinkButton ID="LogoutButton" runat="server" CssClass="link" CausesValidation="false">Cerrar sesión</asp:LinkButton>
+            </asp:PlaceHolder>
+        </header>
+        <asp:PlaceHolder ID="DemoBanner" runat="server" Visible="false">
+            <div class="demo">Modo demostración: datos ficticios, sin base de datos.</div>
+        </asp:PlaceHolder>
+        <main class="container">
+            <asp:ContentPlaceHolder ID="Body" runat="server" />
+        </main>
+    </form>
+</body>
+</html>

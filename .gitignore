@@ -1,0 +1,7 @@
+bin/
+obj/
+.vs/
+*.user
+TestResults/
+# Secrets: only the .example file is versioned
+src/SupplierPortal.Web/Config/appSettings.config

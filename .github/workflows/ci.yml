@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet restore
+      - name: Build (WebForms site on .NET Framework 4.8 + core library)
+        run: dotnet build --no-restore -c Release
+      - name: Unit tests (VB.NET / xUnit)
+        run: dotnet test tests/SupplierPortal.Core.Tests --no-build -c Release --logger "console;verbosity=normal"
+      - name: Smoke test on IIS Express
+        shell: pwsh
+        run: ./tests/smoke-test.ps1
