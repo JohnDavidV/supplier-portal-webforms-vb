@@ -17,20 +17,20 @@ Public Class CertificateHandler
 
     Public Sub ProcessRequest(context As HttpContext) Implements IHttpHandler.ProcessRequest
         Dim q = context.Request.QueryString
-        Dim nit = If(q("nit"), "")
+        Dim nitBase = If(q("nit"), "")
         Dim year, exp As Long
         Dim services = AppServices.Current
 
         If Not Long.TryParse(q("year"), year) OrElse Not Long.TryParse(q("exp"), exp) _
-           OrElse Not services.Links.IsValid("withholding:" & year, nit, exp, q("sig")) Then
+           OrElse Not services.Links.IsValid("withholding:" & year, nitBase, exp, q("sig")) Then
             context.Response.StatusCode = 403
             context.Response.ContentType = "text/plain; charset=utf-8"
             context.Response.Write("El enlace no es válido o ya expiró.")
             Return
         End If
 
-        Dim supplier = services.Repository.Find(nit)
-        Dim summary = services.Repository.YearlySummary(nit).FirstOrDefault(Function(s) s.Year = year)
+        Dim supplier = services.Repository.Find(nitBase)
+        Dim summary = services.Repository.YearlySummary(nitBase).FirstOrDefault(Function(s) s.Year = year)
         If supplier Is Nothing OrElse summary Is Nothing Then
             context.Response.StatusCode = 404
             Return

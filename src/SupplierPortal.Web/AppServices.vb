@@ -74,10 +74,10 @@ Friend NotInheritable Class DemoData
     Private Shared Function MakePayments(rnd As Random, nit As String) As Payment()
         Dim list As New List(Of Payment)()
         Dim id = 1
-        For Each year In {2025, 2026}
-            For month = 1 To If(year = 2026, 9, 12)
+        For Each yr In {2025, 2026}
+            For mon = 1 To If(yr = 2026, 9, 12)
                 Dim gross = CDec(rnd.Next(800, 9000)) * 1000D
-                list.Add(New Payment With {.Id = id, .NitBase = nit, .PaidOn = New Date(year, month, rnd.Next(5, 28)),
+                list.Add(New Payment With {.Id = id, .NitBase = nit, .PaidOn = New Date(yr, mon, rnd.Next(5, 28)),
                                            .InvoiceNumber = $"FE-{1000 + id}", .GrossAmount = gross,
                                            .Withholding = Math.Round(gross * 0.025D, 0)})
                 id += 1
