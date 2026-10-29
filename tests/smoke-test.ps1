@@ -8,15 +8,28 @@ $iis = "${env:ProgramFiles}\IIS Express\iisexpress.exe"
 if (-not (Test-Path $iis)) { Write-Warning 'IIS Express not installed: smoke test skipped.'; exit 0 }
 
 $site = Resolve-Path (Join-Path $PSScriptRoot '..\src\SupplierPortal.Web')
-$proc = Start-Process $iis -ArgumentList "/path:$site", "/port:$Port", '/systray:false' -PassThru -WindowStyle Hidden
+$logFile = Join-Path ([IO.Path]::GetTempPath()) 'iisexpress-smoke.log'
+$proc = Start-Process $iis -ArgumentList "/path:$site", "/port:$Port", '/systray:false', '/trace:error' -PassThru `
+    -RedirectStandardOutput $logFile -NoNewWindow
 $base = "http://localhost:$Port"
 try {
     $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
     $login = $null
-    foreach ($i in 1..30) {
-        try { $login = Invoke-WebRequest "$base/Login.aspx" -WebSession $session -UseBasicParsing; break } catch { Start-Sleep 2 }
+    $lastError = ''
+    foreach ($i in 1..45) {
+        try { $login = Invoke-WebRequest "$base/Login.aspx" -WebSession $session -UseBasicParsing; break }
+        catch {
+            $lastError = $_.Exception.Message
+            # ASP.NET returns the YSOD (compilation/config error details) for localhost requests
+            if ($_.ErrorDetails.Message) { $lastError += "`n" + ($_.ErrorDetails.Message -replace '<[^>]+>', ' ' -replace '\s{2,}', ' ') }
+            Start-Sleep 2
+        }
     }
-    if (-not $login) { throw 'Site did not start' }
+    if (-not $login) {
+        Write-Host '--- last error ---'; Write-Host ($lastError.Substring(0, [Math]::Min(4000, $lastError.Length)))
+        Write-Host '--- IIS Express output ---'; if (Test-Path $logFile) { Get-Content $logFile -Tail 60 }
+        throw 'Site did not start'
+    }
     if ($login.Content -notmatch 'Ingreso de proveedores') { throw 'Login page did not render' }
     if ($login.Headers['X-Frame-Options'] -ne 'DENY') { throw 'Security headers missing' }
 
